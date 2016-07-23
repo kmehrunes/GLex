@@ -31,6 +31,7 @@ namespace GLex
 		byte segmentLength = 0;
 		ulong sequenceLength = 0;
 		byte bits;
+		byte strandType = 0; //0: DNA, 1: RNA
 
 		// buffer-related variables
 		char[] buffer;
@@ -48,12 +49,13 @@ namespace GLex
 		/// <param name="totalLength">
 		/// The length of the full genome sequence. Used in the header, and to know the length of the last segment
 		/// </param>
-		public GLexWriter (string file, EncodingMode mode, ulong totalLength)
+		public GLexWriter (string file, EncodingMode mode, ulong totalLength, StrandType strand = StrandType.DNA)
 		{
 			writer = new StreamWriter (file);
 			segmentLength = (byte) GLexEncoding.MaxSequenceLength (mode);
 			buffer = new char[segmentLength];
 			sequenceLength = totalLength;
+			strandType = strand == StrandType.DNA ? (byte)0 : (byte)1;
 
 			switch (mode) {
 			case EncodingMode.UNSIGNED_16_BITS:
@@ -80,6 +82,7 @@ namespace GLex
 		{
 			byte[] bytes;
 
+			writer.BaseStream.WriteByte (strandType);
 			writer.BaseStream.WriteByte (bits);
 
 			bytes = BitConverter.GetBytes (sequenceLength);

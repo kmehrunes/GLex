@@ -31,6 +31,7 @@ namespace GLex
 		byte segmentLength = 0;
 		ulong sequenceLength = 0;
 		byte bits;
+		StrandType strandType = StrandType.DNA; //0: DNA, 1: RNA
 
 		// helper variables
 		int readSegments = 0;
@@ -58,6 +59,7 @@ namespace GLex
 		/// </summary>
 		private void ReadHeader ()
 		{
+			strandType = (byte)reader.BaseStream.ReadByte () == 0 ? StrandType.DNA : StrandType.RNA;
 			bits = (byte)reader.BaseStream.ReadByte ();
 
 			byte[] bytes = new byte[8];

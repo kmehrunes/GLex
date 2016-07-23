@@ -27,38 +27,57 @@ namespace GLex
 		UNSIGNED_64_BITS,
 	}
 
+	public enum StrandType {
+		DNA,
+		RNA
+	}
+
 	/// <summary>
 	/// GLex encoding utility class, currently only supports DNA with raw A,C,G,T strings.
 	/// </summary>
 	public class GLexEncoding
 	{
-		static readonly Dictionary<char, byte> encodings = new Dictionary<char, byte> () {
+		static readonly Dictionary<char, byte> DNAEncodings = new Dictionary<char, byte> () {
 			{ 'A', 0 },
 			{ 'C', 1 },
 			{ 'G', 2 },
 			{ 'T', 3 }
 		};
 
-		static readonly Dictionary<byte, char> decodings = new Dictionary<byte, char> () {
+		static readonly Dictionary<byte, char> DNADecodings = new Dictionary<byte, char> () {
 			{ 0, 'A' },
 			{ 1, 'C' },
 			{ 2, 'G' },
 			{ 3, 'T' }
 		};
 
-		public static byte EncodeSymbol (char nucleotide)
+		static readonly Dictionary<char, byte> RNAEncodings = new Dictionary<char, byte> () {
+			{ 'A', 0 },
+			{ 'C', 1 },
+			{ 'G', 2 },
+			{ 'U', 3 }
+		};
+
+		static readonly Dictionary<byte, char> RNADecodings = new Dictionary<byte, char> () {
+			{ 0, 'A' },
+			{ 1, 'C' },
+			{ 2, 'G' },
+			{ 3, 'U' }
+		};
+
+		public static byte EncodeSymbol (char nucleotide, StrandType strand = StrandType.DNA)
 		{
 			try {
-				return encodings [nucleotide];
+				return strand == StrandType.DNA? DNAEncodings [nucleotide] : RNAEncodings [nucleotide];
 			} catch {
 				return 5; // used to mark failure
 			}
 		}
 
-		public static char DecodeSymbol (byte encoding)
+		public static char DecodeSymbol (byte encoding, StrandType strand = StrandType.DNA)
 		{
 			try {
-				return decodings [encoding];
+				return strand == StrandType.DNA? DNADecodings [encoding] : RNADecodings [encoding];
 			} catch {
 				return (char)0; // used to mark failure
 			}
@@ -115,9 +134,9 @@ namespace GLex
 		/// <returns>The lexicographical index of the pattern in a list of patterns of length 'len'.</returns>
 		/// <param name="pattern">Pattern.</param>
 		/// <param name="len">The length of the pattern (used for recursion).</param>
-		public static ulong LexicographicalEncoding (string pattern, int len)
+		public static ulong LexicographicalEncoding (string pattern, int len, StrandType strand = StrandType.DNA)
 		{
-			byte encoding = EncodeSymbol (pattern [len - 1]);
+			byte encoding = EncodeSymbol (pattern [len - 1], strand);
 			if (encoding > 4) {
 				throw new ArgumentException ("The pattern is not a valid genome sequence");
 			}
@@ -126,7 +145,7 @@ namespace GLex
 				return (ulong)encoding;
 			}
 
-			return 4 * LexicographicalEncoding (pattern, len - 1) + encoding;
+			return 4 * LexicographicalEncoding (pattern, len - 1, strand) + encoding;
 		}
 
 		/// <summary>
@@ -135,7 +154,7 @@ namespace GLex
 		/// <returns>A pattern of length 'len' which has the index 'encoding' in a list of all pattern of length 'len'.</returns>
 		/// <param name="encoding">The lexicographical encoding of the pattern (the index of the pattern).</param>
 		/// <param name="len">The length of the pattern.</param>
-		public static string LexicographicalDecoding (ulong encoding, int len)
+		public static string LexicographicalDecoding (ulong encoding, int len, StrandType strand = StrandType.DNA)
 		{
 			if (len < 1 || encoding < 0) {
 				throw new ArgumentException ("The encoding cannot be less than 0 and the length cannot be less than 1");
@@ -148,7 +167,7 @@ namespace GLex
 			while (quotient > 0 || index > 0) {
 				remainder = quotient % 4;
 				quotient /= 4;
-				decoded [--index] = DecodeSymbol ((byte)remainder); // no need to check if the decoding failed, the remainder of dividing by 4 is always valid
+				decoded [--index] = DecodeSymbol ((byte)remainder, strand); // no need to check if the decoding failed, the remainder of dividing by 4 is always valid
 			}
 
 			return new string (decoded);
@@ -159,7 +178,7 @@ namespace GLex
 		/// </summary>
 		/// <returns>The shortest pattern which has the index 'encoding'. Note: All leading A's will be discarded</returns>
 		/// <param name="encoding">The lexicographical encoding of the pattern (the index of the pattern).</param>
-		public static string LexicographicalDecoding (ulong encoding)
+		public static string LexicographicalDecoding (ulong encoding, StrandType strand = StrandType.DNA)
 		{
 			if (encoding < 0) {
 				throw new ArgumentException ("The encoding cannot be less than 0");
@@ -171,7 +190,7 @@ namespace GLex
 			while (quotient > 0) {
 				remainder = quotient % 4;
 				quotient /= 4;
-				decoded.Add (DecodeSymbol ((byte)remainder)); // no need to check if the decoding failed, the remainder of dividing by 4 is always valid
+				decoded.Add (DecodeSymbol ((byte)remainder, strand)); // no need to check if the decoding failed, the remainder of dividing by 4 is always valid
 			}
 
 			return new string (decoded.ToArray());
