@@ -108,9 +108,9 @@ namespace GLex
 			readSegments++;
 
 			if (readSegments != numSegments)
-				segment = GLexEncoding.LexicographicalDecoding (encoding, segmentLength);
+				segment = GLexEncoding.LexicographicalDecoding (encoding, segmentLength, strandType);
 			else {
-				segment = GLexEncoding.LexicographicalDecoding (encoding, (int)sequenceLength - (readSegments-1)*segmentLength);
+				segment = GLexEncoding.LexicographicalDecoding (encoding, (int)sequenceLength - (readSegments-1)*segmentLength, strandType);
 			}
 
 
@@ -258,9 +258,9 @@ namespace GLex
 				readSegments++;
 
 				if (readSegments != numSegments)
-					segment = GLexEncoding.LexicographicalDecoding (encoding, segmentLength);
+					segment = GLexEncoding.LexicographicalDecoding (encoding, segmentLength, strandType);
 				else {
-					segment = GLexEncoding.LexicographicalDecoding (encoding, (int)sequenceLength - (readSegments-1)*segmentLength);
+					segment = GLexEncoding.LexicographicalDecoding (encoding, (int)sequenceLength - (readSegments-1)*segmentLength, strandType);
 				}
 
 				for (int i = 0; i < segment.Length; i++) {
